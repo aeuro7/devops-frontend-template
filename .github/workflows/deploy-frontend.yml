@@ -1,10 +1,10 @@
-name: "Deploy Frontend Production"
+name: "Deploy Production"
 on:
   push:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"
 env:
-  APP_NAME: "gitops-frontend"
+  APP_NAME: "gitops-backend"
 jobs:
   build:
     runs-on: "ubuntu-latest"
@@ -21,11 +21,14 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: "Debug Docker login"
+        run: docker info  # ตรวจสอบว่า login สำเร็จหรือไม่
+
       - name: "Build and push container"
         run: |-
           IMAGE_TAG="${GITHUB_REF#refs/*/}"
-
           IMAGE_NAME="${{ secrets.DOCKER_USERNAME }}/${{ env.APP_NAME }}:${IMAGE_TAG}"
 
           docker build -f docker/prod.Dockerfile -t "${IMAGE_NAME}" .
+          docker images  # ตรวจสอบว่า image ถูกสร้างหรือไม่
           docker push "${IMAGE_NAME}"
